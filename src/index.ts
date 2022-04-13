@@ -74,13 +74,23 @@ export function executeFift(args: string[]) {
     });
 }
 
-export async function compileFunc(source: string): Promise<string> {
+export async function compileFunc(source: string, libs?: Array<string>): Promise<string> {
     let sourceFile = await createTempFile('.fc');
     let fiftFile = await createTempFile('.fif');
-    let funcLib = path.resolve(__dirname, '..', 'funclib', 'stdlib.fc');
+    let sourceLibs = []
+    if (libs !== undefined) {
+        for (let lib of libs) {
+            let tmpFile = await createTempFile('.fc');
+            await writeFile(tmpFile.name, lib);
+            sourceLibs.push(tmpFile.name)
+        }
+    } else {
+        sourceLibs.push(path.resolve(__dirname, '..', 'funclib', 'stdlib.fc'));
+    }
+
     try {
         await writeFile(sourceFile.name, source);
-        executeFunc(['-PS', '-o', fiftFile.name, funcLib, sourceFile.name]);
+        executeFunc(['-PS', '-o', fiftFile.name, ...sourceLibs, sourceFile.name]);
         let fiftContent = await readFile(fiftFile.name);
         fiftContent = fiftContent.slice(fiftContent.indexOf('\n') + 1); // Remove first line
         return fiftContent;

@@ -18,6 +18,7 @@
     "ton-compiler": "./bin/ton-compiler"
   },
   "scripts": {
+    "prepare": "tsc",
     "release": "rm -fr dist && tsc && jest && yarn publish"
   },
   "dependencies": {
